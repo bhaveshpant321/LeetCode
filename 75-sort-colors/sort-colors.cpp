@@ -1,15 +1,16 @@
 class Solution {
 public:
     void sortColors(vector<int>& nums) {
-        //use counting sort:
-        int num[3]={0};
-        for(int i: nums){
-            num[i]++;
-        }
-        int index=0;
-        for(int color=0;color<3;color++){
-            for(int i=0;i< num[color];i++){
-                nums[index++]=color;
+        // Dutch national Flag
+        int low=0, mid=0, high= nums.size()-1;
+
+        while(mid<=high){
+            if(nums[mid]==0){
+                swap(nums[mid++], nums[low++]);
+            }else if(nums[mid]==1){
+                mid++;
+            }else{
+                swap(nums[mid], nums[high--]);  // Mid doesn't increase
             }
         }
     }
