@@ -11,20 +11,24 @@
 class Solution {
 public:
     bool isPalindrome(ListNode* head) {
-        // Using stack: Reach mid while storing all the values inside a stack till mid point.
-        // Now iterate from mid till end and compare with the top of stack
-        ListNode* fast= head, *slow=head;
-        stack<int> st;
-        while(fast && fast->next){
-            st.push(slow->val);
-            slow=slow->next;
+        // Alternatives: Create an array and compare with reverse or reverse a copy of the entire list: Takes O(n) extra space
+        // find the middle and reverse the latter part, then just compare: O(1) extra space (inplace reversal and comparison)
+
+        ListNode* fast= head, *slow= head, *prev, *temp;
+        while(fast && fast->next){  // finding mid
+            slow= slow->next;
             fast= fast->next->next;
         }
-        if(fast) slow=slow->next;    // Slow moves only in case of odd-length. For even length fast will be at null, for odd it will be at last node.
-        while(slow){
-            if(slow->val!= st.top())  return false;
-            st.pop();
-            slow=slow->next;
+        prev= slow; slow= slow->next; prev->next= nullptr;
+
+        while(slow){    // reversal
+            temp= slow->next; slow->next= prev; prev= slow; slow= temp;
+        }
+
+        fast= head; slow= prev;
+        while(slow){    // comparison
+            if(fast->val!= slow->val)   return false;
+            else{ fast= fast->next; slow= slow->next; }
         }
         return true;
     }
