@@ -1,39 +1,50 @@
 class Solution {
 public:
     vector<int> findOrder(int numCourses, vector<vector<int>>& prerequisites) {
-        vector<vector<int>> graph(numCourses);
-        for(auto& pre: prerequisites){
-            graph[pre[1]].push_back(pre[0]);
+        // Step 1: Build the adjacency list graph and compute in-degrees
+        vector<vector<int>> adj(numCourses);
+        vector<int> inDegree(numCourses, 0);
+        
+        for (const auto& pre : prerequisites) {
+            int course = pre[0];
+            int prerequisite = pre[1];
+            // Direction: prerequisite -> course
+            adj[prerequisite].push_back(course);
+            inDegree[course]++;
         }
-
-        vector<int> visited(numCourses, 0);
-        vector<int> result;
-
-        for(int i=0; i<numCourses; i++){
-            if(visited[i]==0){
-                if(dfs(i, graph, visited, result)){
-                    return {};  // Cycle detected. Cannot move forward
+        
+        // Step 2: Push all courses with 0 in-degree into the queue
+        queue<int> q;
+        for (int i = 0; i < numCourses; ++i) {
+            if (inDegree[i] == 0) {
+                q.push(i);
+            }
+        }
+        
+        // Step 3: Process the courses level by level
+        vector<int> order;
+        while (!q.empty()) {
+            int curr = q.front();
+            q.pop();
+            order.push_back(curr);
+            
+            // Reduce the in-degree of all neighboring dependent courses
+            for (int neighbor : adj[curr]) {
+                inDegree[neighbor]--;
+                // If a neighbor has no more prerequisites, add it to the queue
+                if (inDegree[neighbor] == 0) {
+                    q.push(neighbor);
                 }
             }
         }
-
-        reverse(result.begin(), result.end());
-        return result;
-    }
-private:
-    bool dfs(int node, vector<vector<int>>& graph, vector<int>& visited, vector<int>& result){
-        visited[node]=1;   //Visiting
-
-        for(int neighbor: graph[node]){
-            if(visited[neighbor]==1)    return true;
-            if(visited[neighbor]==0){
-                if(dfs(neighbor, graph, visited, result)) return true;
-            }
+        
+        // Step 4: Check if we were able to include all courses
+        // If order size matches numCourses, it means no cycle was found
+        if (order.size() == numCourses) {
+            return order;
         }
-
-        visited[node]=2;   // Completely visited. Now will not be checked
-        result.push_back(node);
-
-        return false;
+        
+        // Cycle detected, impossible to complete all courses
+        return {};
     }
 };
