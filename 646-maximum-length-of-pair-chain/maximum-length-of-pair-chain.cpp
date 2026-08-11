@@ -1,19 +1,24 @@
 class Solution {
 public:
     int findLongestChain(vector<vector<int>>& pairs) {
-        sort(pairs.begin(), pairs.end(), [](const vector<int>& a, const vector<int>& b){
-            return a[1]< b[1];
-        });
+        // DP approach: LIS
+        
+        // find longest consecutive interval
+        // sort by end times
+        sort(pairs.begin(), pairs.end(), [](vector<int>& a, vector<int>& b){return a[1]< b[1];});
+        /*
+        PS: how to identify whether to sort by start or end time:
+        Look at the core objective of the question: maximizing the number of processed items/intervals requires sorting by end time, while combining, grouping, or modifying overlapping intervals requires sorting by start time
+        */
+        int ans= 1;
+        int prev= pairs[0][1];
 
-        int length=0;
-        int currEnd= -1001; // Better practice to default with LONG_LONG_MIN for no risk programming in OA situations
-        for(const auto& pair: pairs){
-            if(pair[0]> currEnd){
-                length++;
-                currEnd= pair[1];
+        for(int i=1; i<pairs.size(); i++){
+            if(pairs[i][0]> prev){
+                ans++;
+                prev= pairs[i][1];
             }
         }
-        return length;
-
+        return ans;
     }
 };
