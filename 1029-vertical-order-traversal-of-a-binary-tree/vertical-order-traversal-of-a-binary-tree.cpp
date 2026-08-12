@@ -12,36 +12,37 @@
 class Solution {
 public:
     vector<vector<int>> verticalTraversal(TreeNode* root) {
-        // We have row and columns: for a node, left is at (row+1, col-1) and right at (row+1, col+1), we have to return them in order of cols: Like all in col=-1, then all in col= 0, .... Sort by col, if same col, then by row, if same row, then by value
-        // Data structure to use: map<map<multiset>> Then it's simple BFS/DFS (BFS preferred to preserve order better)
-        map<int, map<int, multiset<int>>> nodes;
+        // same as top/bottom view
+        if(!root) return {};
+        
+        unordered_map<int, vector<int>> map;
+        int xmin=0, xmax=0;
 
-        queue<pair<TreeNode*, pair<int, int>>> q;   // {node, {row, col}}
-
-        q.push({root, {0,0}});
+        vector<tuple<int, int, int>> nodes;
+        queue<pair<TreeNode*, pair<int, int>>> q;
+        
+        q.push({root, {0, 0}});
 
         while(!q.empty()){
-            auto temp = q.front();
-            q.pop();
-            TreeNode* node = temp.first;
-            int row = temp.second.first;
-            int col = temp.second.second;
-
-            nodes[col][row].insert(node->val); // Automatic sorting
-
-            if (node->left) q.push({node->left, {row + 1, col - 1}});
-            if (node->right) q.push({node->right, {row + 1, col + 1}});
+            auto [curr, coords]= q.front(); q.pop();
+            auto [x, y]= coords;
+            
+            nodes.push_back({x, y, curr->val});
+            if(curr->left) q.push({curr->left, {x-1, y+1}});
+            if(curr->right) q.push({curr->right, {x+1, y+1}});
         }
 
-        vector<vector<int>> ans;
+        sort(nodes.begin(), nodes.end());
+        int prevX= INT_MIN;
 
-        for(auto &col: nodes){
-            vector<int> temp;
-            for(auto& row: col.second){
-                temp.insert(temp.end(), row.second.begin(), row.second.end());
+        vector<vector<int>> solutions;
+        for(auto [x, y, val]: nodes){
+            if(x!= prevX){
+                solutions.push_back({});
+                prevX= x;
             }
-            ans.push_back(temp);
+            solutions.back().push_back(val);
         }
-        return ans;
+        return solutions;
     }
 };
