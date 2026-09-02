@@ -1,46 +1,37 @@
 class Solution {
 public:
     string minWindow(string s, string t) {
-    if (s.empty() || t.empty()) return "";
+        if (s.length() < t.length()) return "";
 
-    int target[128] = {0};
-    for (char c : t) target[c]++;
+        vector<int> target(128, 0);
+        for (char c : t) target[c]++;
 
-    int requiredUnique = 0;
-    for (int i = 0; i < 128; i++) {
-        if (target[i] > 0) requiredUnique++;
-    }
+        int remaining = t.length();
+        int left = 0, minStart = 0, minLen = INT_MAX;
 
-    int window[128] = {0};
-    int formed = 0;
-    int left = 0, minLen = INT_MAX, startIdx = 0;
+        for (int right = 0; right < s.length(); right++) {
+            // Only decrement remaining if the character is genuinely required
+            if (target[s[right]] > 0) {
+                remaining--;
+            }
+            target[s[right]]--;
 
-    for (int right = 0; right < s.size(); right++) {
-        char c = s[right];
-        window[c]++;
+            // When the window is valid, record and shrink from the left
+            while (remaining == 0) {
+                if (right - left + 1 < minLen) {
+                    minLen = right - left + 1;
+                    minStart = left;
+                }
 
-        // ADD: Check if we just satisfied a character's requirement
-        if (target[c] > 0 && window[c] == target[c]) {
-            formed++;
+                // If removing s[left] causes it to be deficit, we need it again
+                if (target[s[left]] == 0) {
+                    remaining++;
+                }
+                target[s[left]]++;
+                left++;
+            }
         }
 
-        // SHRINK: While the window is valid, try to make it smaller
-        while (formed == requiredUnique) {
-            if (right - left + 1 < minLen) {
-                minLen = right - left + 1;
-                startIdx = left;
-            }
-
-            char leftChar = s[left];
-            // If removing this char breaks the "valid" state
-            if (target[leftChar] > 0 && window[leftChar] == target[leftChar]) {
-                formed--;
-            }
-            window[leftChar]--;
-            left++;
-        }
+        return minLen == INT_MAX ? "" : s.substr(minStart, minLen);
     }
-
-    return minLen == INT_MAX ? "" : s.substr(startIdx, minLen);
-}
 };
