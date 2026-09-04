@@ -1,34 +1,37 @@
 class Solution {
+    bool canShip(int load, int days, vector<int>& weights){
+        int d=1;
+        int curr=0;
+        for(int i=0; i<weights.size(); i++){
+            if(curr+weights[i]<= load){
+                curr+=weights[i];
+            }else{
+                curr=weights[i]; d++;   // must carry over the weight
+            }
+        }
+        return d<=days? true: false;
+    }
 public:
     int shipWithinDays(vector<int>& weights, int days) {
-        int low= *max_element(weights.begin(), weights.end());
-        int high= accumulate(weights.begin(), weights.end(), 0);
+        // ith package: weight[i], cannot load more than maximum capacity
+        // todo: least weight capacity of ship that will result in all package being shipped in d days
+        // Binary search on answer space: min capacity= size of biggest shipment, max capacity= sum
+        int mini=0, maxi=0;
+        for(int w: weights){
+            maxi+=w;
+            mini= max(mini, w);
+        }
 
-        while(low<=high){
-            int mid= low+(high-low)/2;
-            if(canShip(weights, days, mid)){
-                high= mid-1;
+        int res=maxi;
+        while(mini<= maxi){
+            int mid= mini+ (maxi-mini)/2;
+            if(canShip(mid, days, weights)){
+                res= mid;
+                maxi= mid-1;
             }else{
-                low= mid+1;
+                mini= mid+1;
             }
         }
-        return low;
-    }
-private: 
-    bool canShip(vector<int>& weights, int totalDays, int maxAllowedWeight){
-        int currDays=1;
-        int currLoad=0;
-
-        for(int weight: weights){
-            if(currLoad+ weight> maxAllowedWeight){
-                currDays++;
-                currLoad= weight;
-                if(currDays> totalDays) return false;
-            }
-            else{
-                currLoad+= weight;
-            }
-        }
-        return true;
+        return res;
     }
 };
