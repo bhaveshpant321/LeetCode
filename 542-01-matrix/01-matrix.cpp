@@ -1,40 +1,35 @@
 class Solution {
 public:
     vector<vector<int>> updateMatrix(vector<vector<int>>& mat) {
-        // We use multi source BFS here, taking in all the 0s as the source. (As 0s are fewer)
+        // multi source bfs from all zeros to push distances outward to 1s: initialize each 1 with -1 to mark unvisited
+        int m = mat.size(), n = mat[0].size();
         queue<pair<int, int>> q;
-        for(int i=0; i< mat.size(); i++){
-            for(int j=0; j<mat[0].size(); j++){
-                if(mat[i][j]==0){
+        vector<vector<int>> dist(m, vector<int>(n, -1));
+
+        for (int i = 0; i < m; ++i) {
+            for (int j = 0; j < n; ++j) {
+                if (mat[i][j] == 0) {
+                    dist[i][j] = 0;
                     q.push({i, j});
-                }else{
-                    mat[i][j]= -1;  //to indicate unvisited
                 }
             }
         }
-        bfs(mat, q);
 
-        return mat;
-    }
-private:
-    void bfs(vector<vector<int>>& mat, queue<pair<int, int>> q){
-        vector<pair<int, int>> dir={{1,0}, {-1,0}, {0,1}, {0,-1}};
-        int rows= mat.size();
-        int cols= mat[0].size();
+        int dirs[4][2] = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
 
-        while(!q.empty()){
-            auto [r, c]= q.front();
+        while (!q.empty()) {
+            auto [r, c] = q.front();
             q.pop();
 
-            for(auto [dr, dc]: dir){
-                int nr= r+dr;
-                int nc= c+dc;
-                
-                if(nr>=0 && nr < rows && nc>=0 && nc< cols && mat[nr][nc]==-1){
-                    mat[nr][nc]= mat[r][c]+1;
-                    q.push({nr, nc});   // for next level.
+            for (auto& d : dirs) {
+                int nr = r + d[0], nc = c + d[1];
+                if (nr >= 0 && nr < m && nc >= 0 && nc < n && dist[nr][nc] == -1) {
+                    dist[nr][nc] = dist[r][c] + 1;
+                    q.push({nr, nc});
                 }
             }
         }
+
+        return dist;
     }
 };
