@@ -1,40 +1,34 @@
 class Solution {
 public:
     int networkDelayTime(vector<vector<int>>& times, int n, int k) {
-        // Step 1: Adjacency list> u : {v, weight}
+        // adj list u: v, dist
         vector<vector<pair<int, int>>> adj(n+1);
-        for(const auto& edge: times){
-            adj[edge[0]].push_back({edge[1], edge[2]});
+
+        for(auto& t: times){
+            adj[t[0]].push_back({t[1], t[2]});
         }
 
-        // Min heap (distance, node)
-        priority_queue<pair<int, int>, vector<pair<int, int>>, greater<pair<int,int>>> pq;
-
-        vector<int> dist(n+1, 1e9); // 1-n
-
-        dist[k]=0;
+        // min heap
+        priority_queue<pair<int, int>, vector<pair<int, int>>, greater<pair<int, int>>> pq; // dist, node
         pq.push({0, k});
 
-        while(!pq.empty()){
-            auto [d, u]= pq.top();
-            pq.pop();
+        vector<int> dist(n+1, 1e9);
+        // dist[0]= 0; // unreachable node, do not count
+        dist[k]=0;
         
-            // Skip outdated pair (lazy deletion)
-            if(d> dist[u]) continue;
-
-            for(const auto& [v, weight]: adj[u]){
-                if(dist[u]+weight< dist[v]){
-                    dist[v]= dist[u]+weight;
+        while(!pq.empty()){
+            auto [du, u]= pq.top(); pq.pop();
+            if(du> dist[u]) continue;
+            for(auto& [v, d]: adj[u]){
+                if(dist[v]> du+d){
+                    dist[v]= du+d;
                     pq.push({dist[v], v});
                 }
             }
         }
-        int maxTime= 0;
-        for(int i=1; i<=n; i++){
-            if(dist[i]==1e9) return -1;
-            maxTime= max(maxTime, dist[i]);
-        }
-        return maxTime;
 
+        // min time would be max distance
+        int maxi= *max_element(dist.begin()+1, dist.end());
+        return maxi <1e9? maxi: -1; 
     }
 };
