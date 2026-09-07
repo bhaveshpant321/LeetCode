@@ -1,40 +1,31 @@
 class Solution {
+    vector<int> parent;
+
+    int find(int i){
+        if(parent[i]==i) return i;
+        return parent[i]= find(parent[i]);
+    }
+    bool unite(int u ,int v){
+        int root_u= find(u);
+        int root_v= find(v);
+        if(root_u==root_v) return true;
+        parent[root_u]= root_v;
+        return false;
+    }
+
 public:
     vector<int> findRedundantConnection(vector<vector<int>>& edges) {
+        // DSU to find the redundant edge (when root of u and v are the same)
         int n= edges.size();
-        vector<int> rank(n+1,0);
-        vector<int> parent(n+1);
-        for(int i=0; i<n+1; i++) parent[i]=i;
+        parent.resize(n+1); // 1 indexed
+        iota(parent.begin(), parent.end(), 0);
 
-        for(int i=0; i<n; i++){
-            int a= edges[i][0];
-            int b= edges[i][1];
-            if(unite(a, b, rank, parent)){
-                return {a,b};
+        for(const auto& edge: edges){
+            int u= edge[0], v= edge[1];
+            if(unite(u, v)){
+                return edge;
             }
         }
-        return {-1, -1};
-    }
-private:
-    int find(int x, vector<int>& parent){
-        if(parent[x]==x) return x;
-        return parent[x]=find(parent[x], parent);
-    }
-    bool unite(int x, int y, vector<int>& rank, vector<int>& parent){
-        int parent_x= find(x, parent);
-        int parent_y= find(y, parent);
-
-        if(parent_x !=parent_y){
-            if(rank[parent_x]> rank[parent_y]){
-                rank[parent_x]++;
-                parent[parent_y]= parent_x;
-            }else{  // smaller or equal rank of x wrt y
-                rank[parent_y]++;
-                parent[parent_x]= parent_y;
-            }
-            return false;
-        }
-        else
-            return true;
+        return {};
     }
 };
